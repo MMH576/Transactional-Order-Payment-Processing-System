@@ -38,6 +38,9 @@ export const orders = {
   getMyOrders: () => api.get('/orders/my-orders'),
   getOne: (id: string) => api.get(`/orders/${id}`),
   getAll: () => api.get('/orders'),
+  // Demo endpoints for simulating payment flow
+  simulatePayment: (id: string) => api.post(`/orders/${id}/simulate-payment`),
+  fulfillOrder: (id: string) => api.post(`/orders/${id}/fulfill`),
 };
 
 // Inventory API (Admin)
