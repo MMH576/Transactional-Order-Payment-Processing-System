@@ -7,6 +7,8 @@ import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
 import { ProductsModule } from './products/products.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -22,6 +24,8 @@ import { RolesGuard } from './common/guards/roles.guard';
     AuditModule,
     ProductsModule,
     InventoryModule,
+    OrdersModule,
+    PaymentsModule,
   ],
   providers: [
     // Global JWT guard - all routes require auth unless @Public()
