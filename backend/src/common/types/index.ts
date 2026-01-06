@@ -2,6 +2,15 @@ import { Role, OrderStatus, ActionType, EntityType } from '@prisma/client';
 
 export { Role, OrderStatus, ActionType, EntityType };
 
+// Extend Express Request to include rawBody for Stripe webhook verification
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody?: Buffer;
+    }
+  }
+}
+
 // Order State Machine Types
 export interface StateTransition {
   from: OrderStatus;
