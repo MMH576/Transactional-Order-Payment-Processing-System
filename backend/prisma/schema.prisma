@@ -1,5 +1,5 @@
 // Prisma schema for Transactional Order & Payment Processing System
-// Phase 1: Initial setup - full models will be added in Phase 2
+// Phase 2: Complete database schema with all models
 
 generator client {
   provider = "prisma-client-js"
@@ -10,11 +10,143 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder model for Phase 1 - full schema will be added in Phase 2
-model HealthCheck {
-  id        String   @id @default(uuid())
-  status    String   @default("ok")
-  timestamp DateTime @default(now())
+// ============================================
+// USER MODEL
+// ============================================
+enum Role {
+  CUSTOMER
+  ADMIN
+}
 
-  @@map("health_checks")
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  orders    Order[]
+  auditLogs AuditLog[] @relation("ActorAuditLogs")
+
+  @@map("users")
+}
+
+// ============================================
+// PRODUCT MODEL
+// ============================================
+model Product {
+  id        String   @id @default(uuid())
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  inventory  Inventory?
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// ============================================
+// INVENTORY MODEL
+// ============================================
+model Inventory {
+  productId         String   @id @map("product_id")
+  availableQuantity Int      @default(0) @map("available_quantity")
+  reservedQuantity  Int      @default(0) @map("reserved_quantity")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+// ============================================
+// ORDER MODEL
+// ============================================
+enum OrderStatus {
+  CREATED
+  PAYMENT_PENDING
+  PAID
+  FULFILLED
+  CANCELLED
+  FAILED
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String      @map("user_id")
+  status          OrderStatus @default(CREATED)
+  totalAmount     Decimal     @db.Decimal(10, 2) @map("total_amount")
+  paymentIntentId String?     @unique @map("payment_intent_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentIntentId])
+  @@map("orders")
+}
+
+// ============================================
+// ORDER ITEM MODEL
+// ============================================
+model OrderItem {
+  id            String  @id @default(uuid())
+  orderId       String  @map("order_id")
+  productId     String  @map("product_id")
+  quantity      Int
+  priceSnapshot Decimal @db.Decimal(10, 2) @map("price_snapshot")
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ============================================
+// AUDIT LOG MODEL
+// ============================================
+enum ActionType {
+  INVENTORY_UPDATED
+  ORDER_CREATED
+  ORDER_STATUS_CHANGED
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+}
+
+enum EntityType {
+  INVENTORY
+  ORDER
+  PRODUCT
+}
+
+model AuditLog {
+  id          String     @id @default(uuid())
+  actorId     String?    @map("actor_id")
+  actionType  ActionType @map("action_type")
+  entityType  EntityType @map("entity_type")
+  entityId    String     @map("entity_id")
+  beforeState Json?      @map("before_state")
+  afterState  Json?      @map("after_state")
+  timestamp   DateTime   @default(now())
+
+  // Relations
+  actor User? @relation("ActorAuditLogs", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("audit_logs")
 }
