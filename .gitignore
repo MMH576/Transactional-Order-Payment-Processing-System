@@ -13,17 +13,21 @@ out/
 .env
 .env.local
 .env.*.local
+*/.env.local
 !.env.example
+!*.env.example
 
-# IDE
+# IDE & Tools
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Logs
 *.log
@@ -33,6 +37,9 @@ yarn-error.log*
 
 # Testing
 coverage/
+
+# Documentation (internal)
+project_plan.md
 
 # Misc
 *.pem
