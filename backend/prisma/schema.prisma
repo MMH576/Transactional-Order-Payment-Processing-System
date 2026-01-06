@@ -1,0 +1,20 @@
+// Prisma schema for Transactional Order & Payment Processing System
+// Phase 1: Initial setup - full models will be added in Phase 2
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder model for Phase 1 - full schema will be added in Phase 2
+model HealthCheck {
+  id        String   @id @default(uuid())
+  status    String   @default("ok")
+  timestamp DateTime @default(now())
+
+  @@map("health_checks")
+}
