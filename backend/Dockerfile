@@ -42,5 +42,5 @@ COPY --from=builder /app/package*.json ./
 # Expose the port
 EXPOSE 3001
 
-# Run migrations, seed database, then start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main"]
+# Push schema to database (works with existing databases), seed, then start
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/prisma/seed.js && node dist/src/main"]
