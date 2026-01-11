@@ -13,7 +13,6 @@ RUN npm ci
 COPY . .
 
 # Build-time env vars - Render passes these automatically from envVars
-# These MUST be set as environment variables during Render's Docker build
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
@@ -32,7 +31,9 @@ WORKDIR /app
 # Copy built application
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+
+# Copy public folder if it exists (use wildcard to avoid error if empty/missing)
+COPY --from=builder /app/public* ./public/
 
 # Expose port
 EXPOSE 3000
