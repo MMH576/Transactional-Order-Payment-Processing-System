@@ -1,0 +1,54 @@
+# Render Blueprint - Infrastructure as Code
+# Deploy: Go to https://dashboard.render.com/blueprints -> New Blueprint Instance
+# Connect your GitHub repo and Render will auto-deploy everything
+
+databases:
+  - name: orderdb
+    plan: free
+    databaseName: orderdb
+    user: orderdb_user
+
+services:
+  # Backend API Service
+  - type: web
+    name: order-payment-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /products
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: orderdb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: 7d
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # Frontend Service
+  - type: web
+    name: order-payment-frontend
+    runtime: docker
+    plan: free
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    buildArgs:
+      NEXT_PUBLIC_API_URL: https://order-payment-backend.onrender.com
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    envVars:
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false

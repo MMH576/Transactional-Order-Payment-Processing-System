@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
+# Install dependencies (including dev deps for build)
 RUN npm ci
 
 # Copy source code
@@ -21,6 +21,9 @@ RUN npx prisma generate
 
 # Build the application
 RUN npm run build
+
+# Compile seed script separately
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --esModuleInterop --resolveJsonModule --skipLibCheck
 
 # Production stage
 FROM node:20-alpine
@@ -39,5 +42,5 @@ COPY --from=builder /app/package*.json ./
 # Expose the port
 EXPOSE 3001
 
-# Run migrations and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
+# Run migrations, seed database, then start the application
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/prisma/seed.js && node dist/src/main"]
